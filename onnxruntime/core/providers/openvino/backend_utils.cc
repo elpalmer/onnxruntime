@@ -13,6 +13,16 @@
 #include "core/providers/shared_library/provider_api.h"
 #include "backend_utils.h"
 
+#if defined (OV_API_20)
+using Exception = ov::Exception;
+#elif defined (OPENVINO_2021_4)
+using Exception = InferenceEngine::Exception;
+using WaitMode = InferenceEngine::InferRequest::WaitMode;
+#else
+using Exception = InferenceEngine::details::InferenceEngineException;
+using WaitMode = InferenceEngine::IInferRequest::WaitMode;
+#endif
+
 namespace onnxruntime {
 namespace openvino_ep {
 namespace backend_utils {
@@ -71,25 +81,6 @@ bool IsDirExists(const std::string& pathname) {
   return false;
 }
 
-void CreateDirectory(const std::string& ov_compiled_blobs_dir) {
-  LOGS_DEFAULT(INFO) << log_tag << "'ov_compiled_blobs' directory doesn't exist at the executable path, so creating one";
-#if defined(_WIN32)
-  if (_mkdir(ov_compiled_blobs_dir.c_str()) == 0) {  // Creating a directory
-	  LOGS_DEFAULT(INFO) << log_tag << "created a directory named 'ov_compiled_blobs' at the executable path";
-  } else {
-    LOGS_DEFAULT(INFO) << log_tag << "Error creating a directory named 'ov_compiled_blobs' at the executable path";
-    throw std::runtime_error("Could not create the directory");
-  }
-#else
-  if (mkdir(ov_compiled_blobs_dir.c_str(), 0777) == 0) { // Creating a directory
-    LOGS_DEFAULT(INFO) << log_tag << "created a directory named 'ov_compiled_blobs' at the executable path";
-  } else {
-    LOGS_DEFAULT(INFO) << log_tag << "Error creating a directory named 'ov_compiled_blobs' at the executable path";
-    throw std::runtime_error("Could not create the directory");
-  }
-#endif
-}
-
 struct static_cast_int64 {
   template <typename T1>  // T1 models type statically convertible to T
   int64_t operator()(const T1& x) const { return static_cast<int64_t>(x); }
@@ -109,9 +100,13 @@ CreateCNNNetwork(const ONNX_NAMESPACE::ModelProto& model_proto, const GlobalCont
 
   std::shared_ptr<ngraph::Function> ng_function;
   #if defined (OPENVINO_2021_4)
-    const std::string model = model_proto.SerializeAsString();
-    auto cnn_network = global_context.ie_core.ReadModel(model);
-    ng_function = cnn_network->getFunction();
+    try{
+      const std::string model = model_proto.SerializeAsString();
+      auto cnn_network = global_context.ie_core.ReadModel(model);
+      ng_function = cnn_network->getFunction();
+    } catch (std::string const & msg) {
+      throw msg;
+    }
   #else
      ORT_UNUSED_PARAMETER(model_proto);
   #endif
@@ -156,6 +151,7 @@ CreateCNNNetwork(const ONNX_NAMESPACE::ModelProto& model_proto, const GlobalCont
 #if defined (OV_API_20)
 std::shared_ptr<OVNetwork>
 CreateOVModel(const ONNX_NAMESPACE::ModelProto& model_proto, const GlobalContext& global_context, const SubGraphContext& subgraph_context, std::map<std::string, std::shared_ptr<ngraph::Node>>& const_outputs_map) {
+  const std::string log_tag = "[OpenVINO-EP] ";
   if(IsCILogEnabled()) {
     std::cout << "CreateNgraphFunc" << std::endl;
   }
@@ -167,45 +163,62 @@ CreateOVModel(const ONNX_NAMESPACE::ModelProto& model_proto, const GlobalContext
 #endif
 
   const std::string model = model_proto.SerializeAsString();
-  auto cnn_network = global_context.ie_core.ReadModel(model);
+  try {
+    auto cnn_network = global_context.ie_core.ReadModel(model);
 
-  if ((subgraph_context.precision == InferenceEngine::Precision::FP16) &&
-      (global_context.device_type.find("MYRIAD") == std::string::npos)) {
-    //FP16 transformations
-    ov::pass::ConvertFP32ToFP16 pass_obj;
-    pass_obj.run_on_model(cnn_network);
-    cnn_network->validate_nodes_and_infer_types();
-
-    auto proc = ov::preprocess::PrePostProcessor(cnn_network);
-    for (size_t i=0; i < cnn_network->inputs().size(); i++) {
-      if(cnn_network->inputs()[i].get_element_type() == ov::element::f16) {
-        proc.input(i).tensor().set_element_type(ov::element::f32);
-        proc.input(i).preprocess().convert_element_type(ov::element::f16);
+    if ((subgraph_context.precision == InferenceEngine::Precision::FP16) &&
+        (global_context.device_type.find("MYRIAD") == std::string::npos)) {
+      //FP16 transformations
+      try {
+        ov::pass::ConvertFP32ToFP16 pass_obj;
+        pass_obj.run_on_model(cnn_network);
+      } catch (const Exception& e) {
+              throw std::string(log_tag + " Exception while converting the model from FP32 to FP16: " + std::string(e.what()));
+          } catch (...) {
+              throw std::string(log_tag + " Exception while converting the model from FP32 to FP16");
       }
+      cnn_network->validate_nodes_and_infer_types();
+
+      auto proc = ov::preprocess::PrePostProcessor(cnn_network);
+      for (size_t i=0; i < cnn_network->inputs().size(); i++) {
+        if(cnn_network->inputs()[i].get_element_type() == ov::element::f16) {
+          proc.input(i).tensor().set_element_type(ov::element::f32);
+          proc.input(i).preprocess().convert_element_type(ov::element::f16);
+        }
+      }
+
+      for (size_t i=0; i < cnn_network->outputs().size(); i++) {
+        if(cnn_network->outputs()[i].get_element_type() == ov::element::f16) {
+          proc.output(i).postprocess().convert_element_type(ov::element::f32);
+        }
+      }
+      cnn_network = proc.build();
     }
 
-    for (size_t i=0; i < cnn_network->outputs().size(); i++) {
-      if(cnn_network->outputs()[i].get_element_type() == ov::element::f16) {
-        proc.output(i).postprocess().convert_element_type(ov::element::f32);
+    //Check for Constant Folding
+    if (!global_context.is_wholly_supported_graph) {
+      ov::pass::ConstantFolding pass_const_obj;
+      try {
+        pass_const_obj.run_on_model(cnn_network);
+      } catch (const Exception& e) {
+          throw std::string(log_tag + " Exception occured during optimization - constant folding : " + std::string(e.what()));
+      } catch (...) {
+          throw std::string(log_tag + "  Exception occured during optimization - constant folding ");
+      }
+      auto& results = const_cast<ov::ResultVector&>(cnn_network.get()->get_results());
+      size_t index = results.size() - 1;
+
+      for (auto it = results.rbegin(); it != results.rend(); ++it) {
+        if (auto const_node = std::dynamic_pointer_cast<ngraph::op::Constant>((*it)->input_value(0).get_node_shared_ptr())) {
+          const_outputs_map[(*it)->get_friendly_name()] = const_node;
+          results.erase(results.begin() + index);
+        }
+        --index;
       }
     }
-    cnn_network = proc.build();
-  }
-
-  //Check for Constant Folding
-  if (!global_context.is_wholly_supported_graph) {
-    ov::pass::ConstantFolding pass_const_obj;
-    pass_const_obj.run_on_model(cnn_network);
-    auto& results = const_cast<ov::ResultVector&>(cnn_network.get()->get_results());
-    size_t index = results.size() - 1;
-
-    for (auto it = results.rbegin(); it != results.rend(); ++it) {
-      if (auto const_node = std::dynamic_pointer_cast<ngraph::op::Constant>((*it)->input_value(0).get_node_shared_ptr())) {
-        const_outputs_map[(*it)->get_friendly_name()] = const_node;
-        results.erase(results.begin() + index);
-      }
-      --index;
-    }
+    return cnn_network;
+  }catch (std::string const & msg) {
+      throw msg;
   }
   #ifndef NDEBUG
   if (IsDebugEnabled()) {
@@ -244,7 +257,7 @@ InferenceEngine::Precision ConvertPrecisionONNXToOpenVINO(const ONNX_NAMESPACE::
   } else if (*type_string == "int64" || *type_string == "tensor(int64)") {
     return InferenceEngine::Precision::I32;
   } else {
-    ORT_THROW(log_tag + "Unsupported Data type");
+    throw std::string(log_tag + "Unsupported Data type");
   }
 }
 
@@ -260,8 +273,12 @@ void SetIODefs(const ONNX_NAMESPACE::ModelProto& model_proto,
   int input_idx = 0;
   for (auto iter = inputInfo.begin(); iter != inputInfo.end(); ++iter, ++input_idx) {
     // Get the onnx index for the corresponding input (ignoring initializers)
-    auto precision = ConvertPrecisionONNXToOpenVINO(model_proto.graph().input(input_idx).type(), device);
-    iter->second->setPrecision(precision);
+    try{
+      auto precision = ConvertPrecisionONNXToOpenVINO(model_proto.graph().input(input_idx).type(), device);
+      iter->second->setPrecision(precision);
+    } catch (std::string const & msg) {
+        throw msg;
+    }
   }
 
   // Prepare output blobs
@@ -274,10 +291,14 @@ void SetIODefs(const ONNX_NAMESPACE::ModelProto& model_proto,
       break;
     auto itr = output_names.find(output_name);
     if (itr == output_names.end()) {
-      ORT_THROW(log_tag + "Output Names Mismatch: " + output_name + " doesn't exist");
+      throw std::string(log_tag + "Output Names Mismatch: " + output_name + " doesn't exist");
     }
-    auto precision = ConvertPrecisionONNXToOpenVINO(model_proto.graph().output(itr->second).type(), device);
-    iter->second->setPrecision(precision);
+    try{
+      auto precision = ConvertPrecisionONNXToOpenVINO(model_proto.graph().output(itr->second).type(), device);
+      iter->second->setPrecision(precision);
+    } catch (std::string const & msg) {
+        throw msg;
+    }
   }
 }
 
@@ -306,7 +327,7 @@ GetOutputTensor(Ort::CustomOpApi& ort, OrtKernelContext* context, size_t batch_s
   }
   auto it = output_names.find(output_name);
   if (it == output_names.end()) {
-    ORT_THROW(log_tag + "Output names mismatch between OpenVINO and ONNX");
+    throw std::string(log_tag + "Output names mismatch between OpenVINO and ONNX");
   }
   int index = it->second;
   output_tensor = ort.KernelContext_GetOutput(context, index, output_shape.get(), num_dims);
@@ -329,7 +350,7 @@ GetOutputTensor(Ort::CustomOpApi& ort, OrtKernelContext* context,
 
   auto it = output_names.find(output_name);
   if (it == output_names.end()) {
-    ORT_THROW(log_tag + "Output names mismatch between OpenVINO and ONNX");
+    throw std::string(log_tag + "Output names mismatch between OpenVINO and ONNX");
   }
   int index = it->second;
   auto shape = node->get_shape();
@@ -390,7 +411,7 @@ void FillOutputsWithConstantData(Ort::CustomOpApi& ort, std::shared_ptr<ngraph::
       break;
     }
     default:
-      ORT_THROW(log_tag + "Unsupported output data type");
+      throw std::string(log_tag + "Unsupported output data type");
   }
 }
 
@@ -414,7 +435,7 @@ void FillInputBlob(InferenceEngine::Blob::Ptr& inputBlob, size_t batch_slice_idx
   const OrtValue* tensor = ort.KernelContext_GetInput(context, subgraph_context.input_names.at(input_name));
   auto mem_info = ort.GetTensorMemoryInfo(tensor);
   if (strcmp(mem_info->name, OpenVINO_GPU) == 0) {
-    ORT_THROW(log_tag + "IO Buffering is not enabled, Please enable Input on CPU");
+    throw std::string(log_tag + "IO Buffering is not enabled, Please enable Input on CPU");
   }
   auto tensor_shape = ort.GetTensorTypeAndShape(tensor);
   auto elem_type = ort.GetTensorElementType(tensor_shape);
@@ -486,7 +507,7 @@ void FillInputBlob(OVTensorPtr inputBlob, size_t batch_slice_idx,
     const OrtValue* tensor = ort.KernelContext_GetInput(context, subgraph_context.input_names.at(input_name));
     auto mem_info = ort.GetTensorMemoryInfo(tensor);
     if (strcmp(mem_info->name, OpenVINO_GPU) == 0) {
-      ORT_THROW(log_tag + "IO Buffering is not enabled, Please enable Input on CPU");
+      throw std::string(log_tag + "IO Buffering is not enabled, Please enable Input on CPU");
     }
     // Copy input data into OpenVINO's input buffer
     const char* tensor_data = ort.GetTensorData<char>(tensor);
