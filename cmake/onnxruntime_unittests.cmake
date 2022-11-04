@@ -223,12 +223,13 @@ else()  # minimal and/or reduced ops build
     "${TEST_SRC_DIR}/platform/*.cc"
     )
 
-  if (onnxruntime_MINIMAL_BUILD)
+  if (onnxruntime_MINIMAL_BUILD AND NOT onnxruntime_REDUCED_OPS_BUILD)
     list(APPEND onnxruntime_test_framework_src_patterns
       "${TEST_SRC_DIR}/framework/ort_model_only_test.cc"
     )
+  endif()
 
-  else() # reduced ops build
+  if (NOT onnxruntime_MINIMAL_BUILD)
     file(GLOB onnxruntime_test_ir_src CONFIGURE_DEPENDS
       "${TEST_SRC_DIR}/ir/*.cc"
       "${TEST_SRC_DIR}/ir/*.h"
@@ -1096,6 +1097,7 @@ if (NOT onnxruntime_ENABLE_TRAINING_TORCH_INTEROP)
   if (onnxruntime_BUILD_SHARED_LIB)
     onnxruntime_add_static_library(onnxruntime_mocked_allocator ${TEST_SRC_DIR}/util/test_allocator.cc)
     target_include_directories(onnxruntime_mocked_allocator PUBLIC ${TEST_SRC_DIR}/util/include)
+    target_link_libraries(onnxruntime_mocked_allocator PRIVATE ${GSL_TARGET})
     set_target_properties(onnxruntime_mocked_allocator PROPERTIES FOLDER "ONNXRuntimeTest")
 
     #################################################################
@@ -1252,6 +1254,7 @@ else()
   onnxruntime_add_shared_library_module(custom_op_library ${TEST_SRC_DIR}/testdata/custom_op_library/custom_op_library.cc)
 endif()
 target_include_directories(custom_op_library PRIVATE ${REPO_ROOT}/include)
+target_link_libraries(custom_op_library PRIVATE ${GSL_TARGET})
 if(UNIX)
   if (APPLE)
     set(ONNXRUNTIME_CUSTOM_OP_LIB_LINK_FLAG "-Xlinker -dead_strip")
