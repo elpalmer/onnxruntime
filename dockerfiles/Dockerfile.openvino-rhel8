@@ -1,6 +1,5 @@
 # Build stage
-FROM registry.access.redhat.com/ubi8/ubi:8.4
-
+FROM registry.access.redhat.com/ubi8/ubi:latest
 WORKDIR /code
 
 ARG MY_ROOT=/code
@@ -19,7 +18,7 @@ ENV LD_LIBRARY_PATH=${INTEL_OPENVINO_DIR}/extras/opencv/lib:${LD_LIBRARY_PATH}
 ENV LD_LIBRARY_PATH=/usr/local/lib:/usr/lib:/usr/local/lib64:/usr/lib64:/lib64:${LD_LIBRARY_PATH}
 
 # Install packages 
-RUN yum install -y yum-utils autoconf automake libtool unzip udev wget zlib-devel libffi-devel openssl-devel git make gcc && \
+RUN yum install -y yum-utils autoconf automake libtool unzip udev wget libffi-devel openssl-devel git make gcc && \
     yum clean packages &&  yum clean all && rm -rf /var/cache/yum && \
 # Install python 3.8
     cd $MY_ROOT && \
