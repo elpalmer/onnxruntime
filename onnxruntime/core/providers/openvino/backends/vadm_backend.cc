@@ -37,7 +37,7 @@ VADMBackend::VADMBackend(const ONNX_NAMESPACE::ModelProto& model_proto,
   num_inf_reqs_ = 8;
 
   #if defined(OV_API_20)
-    ie_cnn_network_ = CreateOVModel(model_proto, global_context_, subgraph_context_, const_outputs_map_);
+    ie_cnn_network_ = CreateOVModel(model_proto, global_context_, subgraph_context_);
   #else
     ie_cnn_network_ = CreateCNNNetwork(model_proto, global_context_, subgraph_context_, const_outputs_map_);
     SetIODefs(model_proto, ie_cnn_network_, subgraph_context_.output_names, const_outputs_map_, global_context_.device_type);
@@ -95,7 +95,7 @@ VADMBackend::VADMBackend(const ONNX_NAMESPACE::ModelProto& model_proto,
 void VADMBackend::StartAsyncInference(Ort::CustomOpApi& ort, OrtKernelContext* context,
                                       size_t batch_slice_idx, size_t infer_req_idx) {
   auto infer_request = infer_requests_[infer_req_idx];
-  
+
   #if defined (OV_API_20)
   auto graph_input_info = ie_cnn_network_->inputs();
     int input_idx = 0;
@@ -111,18 +111,18 @@ void VADMBackend::StartAsyncInference(Ort::CustomOpApi& ort, OrtKernelContext* c
           break;
         }
       }
-      // using the input name retrieved from ONNX original to match with the input names returned by OV tensors 
+      // using the input name retrieved from ONNX original to match with the input names returned by OV tensors
       if (input_names.find(onnx_input_name) != input_names.end()) {
           input_name = onnx_input_name;
       } else {
         ORT_THROW(log_tag + "Input names mismatch between OpenVINO and ONNX. " + onnx_input_name + " doesn't exist in the list of OpenVINO input tensor names");
       }
-      OVTensorPtr graph_input_blob; 
+      OVTensorPtr graph_input_blob;
       graph_input_blob = infer_request->GetTensor(input_name);
       FillInputBlob(graph_input_blob, batch_slice_idx, input_name, ort, context, subgraph_context_);
       input_idx++;
-    }        
-  #else 
+    }
+  #else
     auto graph_input_info = ie_cnn_network_->getInputsInfo();
   for (auto input_info_iter = graph_input_info.begin();
        input_info_iter != graph_input_info.end(); ++input_info_iter) {
@@ -132,11 +132,11 @@ void VADMBackend::StartAsyncInference(Ort::CustomOpApi& ort, OrtKernelContext* c
     auto graph_input_blob = infer_request->GetTensor(input_name);
     FillInputBlob(graph_input_blob, batch_slice_idx, input_name, ort, context, precision, subgraph_context_);
   }
-  #endif 
+  #endif
 
   // Start Async inference
   infer_request->StartAsync();
-  
+
 }
 
 // Wait for asynchronous inference completion on an Infer Request object indexed by infer_req_idx
@@ -148,7 +148,7 @@ void VADMBackend::CompleteAsyncInference(Ort::CustomOpApi& ort, OrtKernelContext
 
   // Wait for Async inference completion
   infer_request->WaitRequest();
-  
+
   #if defined (OV_API_20)
   auto graph_output_info = ie_cnn_network_->outputs();
   for (auto output_info_iter = graph_output_info.begin();
@@ -187,7 +187,7 @@ void VADMBackend::CompleteAsyncInference(Ort::CustomOpApi& ort, OrtKernelContext
     auto precision = output_info_iter->second->getPrecision();
     FillOutputBlob(graph_output_blob, output_tensor, ort, precision, batch_slice_idx);
   }
-  #endif 
+  #endif
   if (!const_outputs_map_.empty()) {
     for (auto item : const_outputs_map_) {
       auto out_name = item.first;
@@ -230,7 +230,7 @@ void VADMBackend::Infer(Ort::CustomOpApi& ort, OrtKernelContext* context) {
     batch_size = DeduceBatchSize(ort, tensor, ie_cnn_network_->get_result()->get_shape());
     #else
     batch_size = DeduceBatchSize(ort, tensor, ie_cnn_network_->getInputsInfo().begin()->second->getTensorDesc().getDims());
-    #endif                             
+    #endif
   }
 
   size_t full_parallel_runs = batch_size / num_inf_reqs_;
