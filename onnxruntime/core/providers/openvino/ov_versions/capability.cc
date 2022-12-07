@@ -138,7 +138,7 @@ std::vector<std::unique_ptr<ComputeCapability>> GetCapability::Execute() {
     }
     int no_of_clusters = 0;
 
-    for (auto this_cluster : connected_clusters) {
+    for (auto& this_cluster : connected_clusters) {
       if (device_type_ == "MYRIAD" && no_of_clusters == 10) {
         break;
       }

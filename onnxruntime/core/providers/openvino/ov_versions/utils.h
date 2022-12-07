@@ -20,7 +20,7 @@ std::map<std::string, std::set<std::string>> GetNgSupportedOps(const int onnx_op
 std::vector<std::vector<NodeIndex>>
 GetPartitionedClusters(const std::vector<NodeIndex>& topological_order, const std::vector<NodeIndex>& unsupported_nodes);
 
-void IdentifyConnectedNodes(const GraphViewer& graph_viewer, NodeIndex curr_node_index, std::vector<NodeIndex>& cluster, std::vector<NodeIndex>& sub_cluster);
+void IdentifyConnectedNodes(const GraphViewer& graph_viewer, NodeIndex curr_node_index, std::vector<NodeIndex> cluster, std::vector<NodeIndex>& sub_cluster);
 
 std::vector<std::vector<NodeIndex>>
 GetConnectedClusters(const GraphViewer& graph_viewer, const std::vector<std::vector<NodeIndex>>& clusters);

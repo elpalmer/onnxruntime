@@ -115,8 +115,10 @@ GetPartitionedClusters(const std::vector<NodeIndex>& topological_order, const st
     if (!this_cluster.empty()) {
       ng_clusters.push_back(std::move(this_cluster));
     }
-    // Point prev to node idx past this unsuported node.
-    prev = ++it;
+    if (it != topological_order.end()) {
+      // Point prev to node idx past this unsuported node.
+      prev = ++it;
+    }
   }
 
   //Tail
@@ -128,7 +130,7 @@ GetPartitionedClusters(const std::vector<NodeIndex>& topological_order, const st
   return ng_clusters;
 }
 
-void IdentifyConnectedNodes(const GraphViewer& graph_viewer, NodeIndex curr_node_index, std::vector<NodeIndex>& cluster, std::vector<NodeIndex>& sub_cluster) {
+void IdentifyConnectedNodes(const GraphViewer& graph_viewer, NodeIndex curr_node_index, std::vector<NodeIndex> cluster, std::vector<NodeIndex>& sub_cluster) {
   if (std::find(cluster.begin(), cluster.end(), curr_node_index) == cluster.end())
     return;
 
@@ -148,7 +150,7 @@ std::vector<std::vector<NodeIndex>>
 GetConnectedClusters(const GraphViewer& graph_viewer, const std::vector<std::vector<NodeIndex>>& clusters) {
   std::vector<std::vector<NodeIndex>> connected_clusters;
 
-  for (auto this_cluster : clusters) {
+  for (auto& this_cluster : clusters) {
     while (this_cluster.size() > 0) {
       std::vector<NodeIndex> sub_cluster;
       IdentifyConnectedNodes(graph_viewer, this_cluster[0], this_cluster, sub_cluster);

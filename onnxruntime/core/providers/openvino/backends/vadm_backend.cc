@@ -158,7 +158,7 @@ void VADMBackend::CompleteAsyncInference(Ort::KernelContext& context,
   }
 
   if (!const_outputs_map_.empty()) {
-    for (auto item : const_outputs_map_) {
+    for (auto& item : const_outputs_map_) {
       auto out_name = item.first;
       auto node = item.second;
       auto output_tensor = GetOutputTensor(context, out_name, subgraph_context_.output_names, node);
@@ -204,7 +204,7 @@ void VADMBackend::Infer(OrtKernelContext* context) {
   size_t remainder_parallel_runs = batch_size % num_inf_reqs_;
 
   if (subgraph_context_.is_constant) {
-    for (auto item : const_outputs_map_) {
+    for (auto& item : const_outputs_map_) {
       auto out_name = item.first;
       auto node = item.second;
       auto output_tensor = GetOutputTensor(ctx, out_name, subgraph_context_.output_names, node);

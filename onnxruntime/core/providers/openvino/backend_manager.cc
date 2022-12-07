@@ -210,7 +210,7 @@ std::string MakeMapKeyString(const std::vector<std::vector<int64_t>>& shapes,
   std::string key;
   key += device_type;
   key += "|";  //separator
-  for (auto shape : shapes) {
+  for (auto& shape : shapes) {
     for (auto dim : shape) {
       std::ostringstream o;
       o << dim;

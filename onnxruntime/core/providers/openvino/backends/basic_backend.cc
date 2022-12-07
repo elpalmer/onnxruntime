@@ -358,7 +358,7 @@ void BasicBackend::CompleteAsyncInference(Ort::KernelContext& context, OVInferRe
   }
 
   if (!const_outputs_map_.empty()) {
-    for (auto item : const_outputs_map_) {
+    for (auto& item : const_outputs_map_) {
       auto out_name = item.first;
       auto node = item.second;
       auto output_tensor = GetOutputTensor(context, out_name, subgraph_context_.output_names, node);
@@ -381,7 +381,7 @@ void BasicBackend::Infer(OrtKernelContext* ctx) {
   LOGS_DEFAULT(INFO) << log_tag << "In Infer";
 
   if (subgraph_context_.is_constant) {
-    for (auto item : const_outputs_map_) {
+    for (auto& item : const_outputs_map_) {
       auto out_name = item.first;
       auto node = item.second;
       auto output_tensor = GetOutputTensor(context, out_name, subgraph_context_.output_names, node);
