@@ -39,7 +39,7 @@ static std::vector<std::string> parseDevices(const std::string& device_string) {
     print_build_options();
     ORT_THROW("Invalid device string: " + device_string);
   }
-  std::vector<std::string> dev_options = {"CPU", "GPU", "MYRIAD", "FPGA", "HDDL"};
+  std::vector<std::string> dev_options = {"CPU", "GPU", "MYRIAD", "VPUX", "FPGA", "HDDL"};
   for (std::string dev : devices) {
     if (!std::count(dev_options.begin(), dev_options.end(), dev)) {
       print_build_options();
@@ -87,6 +87,9 @@ struct OpenVINOExecutionProviderInfo {
 #elif defined OPENVINO_CONFIG_MYRIAD
       device_type_ = "MYRIAD";
       precision_ = "FP16";
+#elif defined OPENVINO_CONFIG_VPUX
+      device_type_ = "VPUX";
+      precision_ = "U8";
 #elif defined OPENVINO_CONFIG_VAD_M
       device_type_ = "HDDL";
       precision_ = "FP16";
@@ -134,6 +137,9 @@ struct OpenVINOExecutionProviderInfo {
     } else if (dev_type == "MYRIAD_FP16") {
       device_type_ = "MYRIAD";
       precision_ = "FP16";
+    } else if (dev_type == "VPUX_U8") {
+      device_type_ = "VPUX";
+      precision_ = "U8";
     } else if (dev_type == "VAD-M_FP16") {
       device_type_ = "HDDL";
       precision_ = "FP16";

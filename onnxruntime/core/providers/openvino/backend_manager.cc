@@ -39,7 +39,9 @@ BackendManager::BackendManager(const onnxruntime::Node& fused_node,
     subgraph_context_.precision = InferenceEngine::Precision::FP32;
   } else if (prec_str == "FP16") {
     subgraph_context_.precision = InferenceEngine::Precision::FP16;
-  } else {
+  } else if (prec_str == "U8") {
+    subgraph_context_.precision = InferenceEngine::Precision::U8; 
+  else {
     ORT_THROW("Invalid OpenVINO Precision type: " + prec_str);
   }
 

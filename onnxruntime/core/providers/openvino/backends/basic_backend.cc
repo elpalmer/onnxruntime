@@ -7,6 +7,8 @@
 #include <sstream>
 #include <fstream>
 
+#include <vpux/vpux_plugin_config.hpp>
+
 #include "core/providers/shared_library/provider_api.h"
 #include "../backend_utils.h"
 #include <ngraph/pass/constant_folding.hpp>
@@ -28,7 +30,7 @@ BasicBackend::BasicBackend(const ONNX_NAMESPACE::ModelProto& model_proto,
   std::string model_blob_name;
   std::string ov_compiled_blobs_dir = "";
 
-  if (hw_target == "MYRIAD")
+  if (hw_target == "MYRIAD" || hw_target == "VPUX")
     vpu_status = true;
   if (!ImportBlob(hw_target, vpu_status)) {
   #if defined (OPENVINO_2021_4)
@@ -164,6 +166,9 @@ void BasicBackend::PopulateConfigValue(OVConfig& config) {
     #if defined (OPENVINO_2021_4) || (OPENVINO_2022_1) || (OPENVINO_2022_2)
       config["MYRIAD_CHECK_PREPROCESSING_INSIDE_MODEL"] = CONFIG_VALUE(NO);
     #endif
+    if (global_context_.device_type.find("VPUX") != std::string::npos) {
+    config["PERFORMANCE_HINT"] = "THROUGHPUT";
+  }
   }
 }
 
