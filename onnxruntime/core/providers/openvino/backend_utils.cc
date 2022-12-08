@@ -326,7 +326,7 @@ void printPerformanceCounts(const std::vector<OVProfilingInfo>& performanceMap,
          << "performance counts:" << std::endl
          << std::endl;
   // Store the current format flag setting, in order to restore it later on.
-  std::ios_base::fmtflags original_flags = std::cout.flags();
+  std::ios_base::fmtflags original_flags(std::cout.flags());
   for (const auto& it : performanceMap) {
     std::string toPrint(it.node_name);
     const int maxLayerName = 30;
