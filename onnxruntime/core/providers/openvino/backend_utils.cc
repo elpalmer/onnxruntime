@@ -6,6 +6,7 @@
 #include <memory>
 #include <sstream>
 #include <fstream>
+#include <iostream>
 
 #include "ov_interface.h"
 #include <ngraph/pass/convert_fp32_to_fp16.hpp>
