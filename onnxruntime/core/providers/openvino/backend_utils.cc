@@ -325,8 +325,6 @@ void printPerformanceCounts(const std::vector<OVProfilingInfo>& performanceMap,
   stream << std::endl
          << "performance counts:" << std::endl
          << std::endl;
-  // Store the current format flag setting, in order to restore it later on.
-  std::ios_base::fmtflags original_flags(std::cout.flags());
   for (const auto& it : performanceMap) {
     std::string toPrint(it.node_name);
     const int maxLayerName = 30;
@@ -355,6 +353,8 @@ void printPerformanceCounts(const std::vector<OVProfilingInfo>& performanceMap,
       totalTime += it.real_time.count();
     }
   }
+  // Store the current format flag setting, in order to restore it later on.
+  std::ios_base::fmtflags original_flags(std::cout.flags());
   stream << std::setw(20) << std::left << "Total time: " + std::to_string(totalTime) << " microseconds" << std::endl;
   std::cout << std::endl;
   std::cout << "Full device name: " << deviceName << std::endl;
