@@ -31,8 +31,8 @@ void BackendManager::ReleaseGlobalContext() {
   g_global_context.reset();
 }
 
-BackendManager::BackendManager(const onnxruntime::Node& fused_node, 
-    const onnxruntime::GraphViewer& subgraph, 
+BackendManager::BackendManager(const onnxruntime::Node& fused_node,
+    const onnxruntime::GraphViewer& subgraph,
     const logging::Logger& logger) {
   auto prec_str = GetGlobalContext().precision_str;
   if (prec_str == "FP32") {
@@ -40,8 +40,8 @@ BackendManager::BackendManager(const onnxruntime::Node& fused_node,
   } else if (prec_str == "FP16") {
     subgraph_context_.precision = InferenceEngine::Precision::FP16;
   } else if (prec_str == "U8") {
-    subgraph_context_.precision = InferenceEngine::Precision::U8; 
-  else {
+    subgraph_context_.precision = InferenceEngine::Precision::U8;
+  } else {
     ORT_THROW("Invalid OpenVINO Precision type: " + prec_str);
   }
 
@@ -174,8 +174,8 @@ bool BackendManager::ModelHasSymbolicInputDims(const onnxruntime::GraphViewer& s
 }
 
 std::unique_ptr<ONNX_NAMESPACE::ModelProto>
-BackendManager::GetModelProtoFromFusedNode(const onnxruntime::Node& fused_node, 
-                                           const onnxruntime::GraphViewer& subgraph, 
+BackendManager::GetModelProtoFromFusedNode(const onnxruntime::Node& fused_node,
+                                           const onnxruntime::GraphViewer& subgraph,
                                            const logging::Logger& logger) const {
   auto model = subgraph.CreateModel(logger);
 
@@ -197,7 +197,7 @@ BackendManager::GetModelProtoFromFusedNode(const onnxruntime::Node& fused_node,
 }
 
 std::vector<std::vector<int64_t>> GetInputTensorShapes(Ort::KernelContext& context) {
-  
+
   const auto input_count = context.GetInputCount();
   std::vector<std::vector<int64_t>> input_shapes;
   input_shapes.reserve(input_count);
