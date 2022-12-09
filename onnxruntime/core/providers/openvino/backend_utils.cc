@@ -354,13 +354,16 @@ void printPerformanceCounts(const std::vector<OVProfilingInfo>& performanceMap,
     }
   }
   // Store the current format flag setting, in order to restore it later on.
-  std::ios_base::fmtflags original_flags(std::cout.flags());
+  //std::ios_base::fmtflags original_flags(std::cout.flags());
+  std::ios  state(NULL);
+  state.copyfmt(std::cout);
   stream << std::setw(20) << std::left << "Total time: " + std::to_string(totalTime) << " microseconds" << std::endl;
   std::cout << std::endl;
   std::cout << "Full device name: " << deviceName << std::endl;
   std::cout << std::endl;
   // Restore the original flags.
-  std::cout.flags(original_flags);
+  //std::cout.flags(original_flags);
+  std::cout.copyfmt(state);
 }
 
 void printPerformanceCounts(OVInferRequestPtr request, std::ostream& stream, std::string deviceName) {
