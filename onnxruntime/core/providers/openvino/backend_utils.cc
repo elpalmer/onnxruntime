@@ -357,9 +357,9 @@ void printPerformanceCounts(const std::vector<OVProfilingInfo>& performanceMap,
   //try 1:std::ios_base::fmtflags original_flags(std::cout.flags());
   //try 2:std::ios  state(NULL);
   //try 2:state.copyfmt(std::cout);
-  //stream << std::setw(20) << std::left << "Total time: " + std::to_string(totalTime) << " microseconds" << std::endl;
-  std::cout << std::setiosflags(std::ios::fixed) << std::setw(20);
-  std::cout << std::left << "Total time: " + std::to_string(totalTime) << " microseconds" << std::endl;
+  stream << std::setw(20) << "Total time: " + std::to_string(totalTime) << " microseconds" << std::endl;
+  //std::cout << std::setiosflags(std::ios::fixed) << std::setw(20);
+  //std::cout << std::left << "Total time: " + std::to_string(totalTime) << " microseconds" << std::endl;
   std::cout << std::endl;
   std::cout << "Full device name: " << deviceName << std::endl;
   std::cout << std::endl;
