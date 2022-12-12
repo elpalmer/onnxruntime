@@ -354,17 +354,19 @@ void printPerformanceCounts(const std::vector<OVProfilingInfo>& performanceMap,
     }
   }
   // Store the current format flag setting, in order to restore it later on.
-  //std::ios_base::fmtflags original_flags(std::cout.flags());
-  //std::ios  state(NULL);
-  //state.copyfmt(std::cout);
-  stream << std::setw(20) << std::left << "Total time: " + std::to_string(totalTime) << " microseconds" << std::endl;
+  //try 1:std::ios_base::fmtflags original_flags(std::cout.flags());
+  //try 2:std::ios  state(NULL);
+  //try 2:state.copyfmt(std::cout);
+  //stream << std::setw(20) << std::left << "Total time: " + std::to_string(totalTime) << " microseconds" << std::endl;
+  std::cout << std::setiosflags(std::ios::fixed) << std::setw(20);
+  std::cout << std::left << "Total time: " + std::to_string(totalTime) << " microseconds" << std::endl;
   std::cout << std::endl;
   std::cout << "Full device name: " << deviceName << std::endl;
   std::cout << std::endl;
   // Restore the original flags.
-  //std::cout.flags(original_flags);
-  //std::cout.copyfmt(state);
-  std::cout << std::resetiosflags(std::ios::adjustfield);
+  //try 1:std::cout.flags(original_flags);
+  //try 2:std::cout.copyfmt(state);
+  //try 3:std::cout << std::resetiosflags(std::ios::adjustfield);
 }
 
 void printPerformanceCounts(OVInferRequestPtr request, std::ostream& stream, std::string deviceName) {
