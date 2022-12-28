@@ -32,7 +32,6 @@ class Node;
 #include "core/framework/stream_handles.h"
 
 namespace onnxruntime {
-void get_mem_custom(std::string func_name);
 /**
    Logical device representation.
 */

@@ -14,7 +14,7 @@
 #include "core/common/logging/logging.h"
 
 namespace onnxruntime {
-
+void get_mem_custom(std::string func_name);
 /**
 Class for managing lookup of the execution providers in a session.
 */
