@@ -24,6 +24,10 @@
 class ITestCase;
 class TestModelInfo;
 
+///////
+void get_perfMem_custom(std::string func_name);
+///////
+
 namespace onnxruntime {
 namespace perftest {
 

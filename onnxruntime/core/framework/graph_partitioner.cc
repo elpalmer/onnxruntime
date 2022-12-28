@@ -16,7 +16,7 @@
 #include "core/graph/graph_viewer.h"
 
 // uncomment this line to count non-CUDA ops in ONNX domain
-//#define COUNT_NON_CUDA_OPS
+// #define COUNT_NON_CUDA_OPS
 
 #ifdef COUNT_NON_CUDA_OPS
 class NonCudaOps {
@@ -408,6 +408,10 @@ static Status PartitionOnnxFormatModelImpl(Graph& graph, FuncManager& func_mgr,
     }
   }
 
+  ////
+  onnxruntime::get_mem_custom("graph_partitioner.cc --> L411 In the Middle of PartitionOnnxFormatModelImpl");
+  ////
+
   // NOTE: if mode_ is kAssignOnly, nodes_to_compile will be empty at this point due to logic in PlaceNode
   // even with single node, EP might still want to compile it.
   // for example, it want to JIT an optimized kernel for LSTM with a given shape.
@@ -432,6 +436,10 @@ static Status PartitionOnnxFormatModelImpl(Graph& graph, FuncManager& func_mgr,
       }
 
       ORT_RETURN_IF_ERROR(current_ep.Compile(nodes_and_viewers, node_compute_funcs));
+
+      ////
+      onnxruntime::get_mem_custom("graph_partitioner.cc --> L440 In the Middle of PartitionOnnxFormatModelImpl");
+      ////
 
       if (node_compute_funcs.size() != nodes_to_compile.size()) {
         return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, type, " did not return correct number of compiled functions");
@@ -460,6 +468,9 @@ static Status PartitionOnnxFormatModelImpl(Graph& graph, FuncManager& func_mgr,
         // now that we're done compiling we can remove the original nodes from the Graph and wire in the new one
         graph.FinalizeFuseSubGraph(indexed_sub_graph, *node);
       }
+      ////
+      onnxruntime::get_mem_custom("graph_partitioner.cc --> 471 After PartitionOnnxFormatModelImpl");
+      ////
     }
   }
 

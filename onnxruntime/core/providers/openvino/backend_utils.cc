@@ -59,14 +59,14 @@ std::string GetCurrentWorkingDir() {
 
 bool IsDirExists(const std::string& pathname) {
   struct stat info;
-  if(stat(pathname.c_str(), &info) != 0) {
+  if (stat(pathname.c_str(), &info) != 0) {
     LOGS_DEFAULT(INFO) << log_tag << "cannot access pathname: " << pathname;
-	  return false;
-  } else if(info.st_mode & S_IFDIR) {
-      LOGS_DEFAULT(INFO) << log_tag << "pathname exists: " << pathname;
-	    return true;
+    return false;
+  } else if (info.st_mode & S_IFDIR) {
+    LOGS_DEFAULT(INFO) << log_tag << "pathname exists: " << pathname;
+    return true;
   } else {
-      LOGS_DEFAULT(INFO) << log_tag << "pathname: " << pathname << ": doesn't contain the directory 'ov_compiled_blobs' ";
+    LOGS_DEFAULT(INFO) << log_tag << "pathname: " << pathname << ": doesn't contain the directory 'ov_compiled_blobs' ";
   }
   return false;
 }
@@ -75,13 +75,13 @@ void CreateDirectory(const std::string& ov_compiled_blobs_dir) {
   LOGS_DEFAULT(INFO) << log_tag << "'ov_compiled_blobs' directory doesn't exist at the executable path, so creating one";
 #if defined(_WIN32)
   if (_mkdir(ov_compiled_blobs_dir.c_str()) == 0) {  // Creating a directory
-	  LOGS_DEFAULT(INFO) << log_tag << "created a directory named 'ov_compiled_blobs' at the executable path";
+    LOGS_DEFAULT(INFO) << log_tag << "created a directory named 'ov_compiled_blobs' at the executable path";
   } else {
     LOGS_DEFAULT(INFO) << log_tag << "Error creating a directory named 'ov_compiled_blobs' at the executable path";
     throw std::runtime_error("Could not create the directory");
   }
 #else
-  if (mkdir(ov_compiled_blobs_dir.c_str(), 0777) == 0) { // Creating a directory
+  if (mkdir(ov_compiled_blobs_dir.c_str(), 0777) == 0) {  // Creating a directory
     LOGS_DEFAULT(INFO) << log_tag << "created a directory named 'ov_compiled_blobs' at the executable path";
   } else {
     LOGS_DEFAULT(INFO) << log_tag << "Error creating a directory named 'ov_compiled_blobs' at the executable path";
@@ -97,7 +97,7 @@ struct static_cast_int64 {
 
 std::shared_ptr<InferenceEngine::CNNNetwork>
 CreateCNNNetwork(const ONNX_NAMESPACE::ModelProto& model_proto, const GlobalContext& global_context, const SubGraphContext& subgraph_context, std::map<std::string, std::shared_ptr<ngraph::Node>>& const_outputs_map) {
-  if(IsCILogEnabled()) {
+  if (IsCILogEnabled()) {
     std::cout << "CreateNgraphFunc" << std::endl;
   }
 
@@ -108,17 +108,17 @@ CreateCNNNetwork(const ONNX_NAMESPACE::ModelProto& model_proto, const GlobalCont
 #endif
 
   std::shared_ptr<ngraph::Function> ng_function;
-  #if defined (OPENVINO_2021_4)
-    const std::string model = model_proto.SerializeAsString();
-    auto cnn_network = global_context.ie_core.ReadModel(model);
-    ng_function = cnn_network->getFunction();
-  #else
-     ORT_UNUSED_PARAMETER(model_proto);
-  #endif
+#if defined(OPENVINO_2021_4)
+  const std::string model = model_proto.SerializeAsString();
+  auto cnn_network = global_context.ie_core.ReadModel(model);
+  ng_function = cnn_network->getFunction();
+#else
+  ORT_UNUSED_PARAMETER(model_proto);
+#endif
 
   if (global_context.device_type.find("GPU") != std::string::npos &&
       subgraph_context.precision == InferenceEngine::Precision::FP16) {
-    //FP16 transformations
+    // FP16 transformations
     ngraph::pass::ConvertFP32ToFP16().run_on_function(ng_function);
     ng_function->validate_nodes_and_infer_types();
   }
@@ -131,32 +131,32 @@ CreateCNNNetwork(const ONNX_NAMESPACE::ModelProto& model_proto, const GlobalCont
     ngraph::pass::ConstantFolding().run_on_function(ng_function);
     auto& results = const_cast<::ngraph::ResultVector&>(ng_function->get_results());
     size_t index = results.size() - 1;
-    #if defined (OV_API_20)
-      for (auto it = results.rbegin(); it != results.rend(); ++it) {
+#if defined(OV_API_20)
+    for (auto it = results.rbegin(); it != results.rend(); ++it) {
       if (auto const_node = std::dynamic_pointer_cast<ngraph::op::Constant>((*it)->input_value(0).get_node_shared_ptr())) {
         const_outputs_map[(*it)->get_friendly_name()] = const_node;
         results.erase(results.begin() + index);
       }
       --index;
     }
-    #else
-      for (auto it = results.rbegin(); it != results.rend(); ++it) {
-        if (auto const_node = std::dynamic_pointer_cast<ngraph::op::Constant>((*it)->input_value(0).get_node_shared_ptr())) {
-          const_outputs_map[result_to_output.at((*it)->get_friendly_name())] = const_node;
-          results.erase(results.begin() + index);
-        }
-        --index;
+#else
+    for (auto it = results.rbegin(); it != results.rend(); ++it) {
+      if (auto const_node = std::dynamic_pointer_cast<ngraph::op::Constant>((*it)->input_value(0).get_node_shared_ptr())) {
+        const_outputs_map[result_to_output.at((*it)->get_friendly_name())] = const_node;
+        results.erase(results.begin() + index);
       }
-    #endif
+      --index;
+    }
+#endif
   }
 
   return std::make_shared<InferenceEngine::CNNNetwork>(ng_function);
 };
 
-#if defined (OV_API_20)
+#if defined(OV_API_20)
 std::shared_ptr<OVNetwork>
 CreateOVModel(const ONNX_NAMESPACE::ModelProto& model_proto, const GlobalContext& global_context, const SubGraphContext& subgraph_context, std::map<std::string, std::shared_ptr<ngraph::Node>>& const_outputs_map) {
-  if(IsCILogEnabled()) {
+  if (IsCILogEnabled()) {
     std::cout << "CreateNgraphFunc" << std::endl;
   }
 
@@ -165,34 +165,42 @@ CreateOVModel(const ONNX_NAMESPACE::ModelProto& model_proto, const GlobalContext
     DumpOnnxModelProto(model_proto, subgraph_context.subgraph_name + "_static.onnx");
   }
 #endif
-
+  ////
+  get_mem_custom("backend_utils.cc --> L171 BEFORE model_proto.SerializeAsString();");
+  ////
   const std::string model = model_proto.SerializeAsString();
+  ////
+  get_mem_custom("backend_utils.cc --> L171 BEFORE ie_core.ReadModel(model)");
+  ////
   auto cnn_network = global_context.ie_core.ReadModel(model);
-
+  ////
+  get_mem_custom("backend_utils.cc --> L171 After ie_core.ReadModel(model)");
+  // sleep(8);
+  ////
   if ((subgraph_context.precision == InferenceEngine::Precision::FP16) &&
       (global_context.device_type.find("MYRIAD") == std::string::npos)) {
-    //FP16 transformations
+    // FP16 transformations
     ov::pass::ConvertFP32ToFP16 pass_obj;
     pass_obj.run_on_model(cnn_network);
     cnn_network->validate_nodes_and_infer_types();
 
     auto proc = ov::preprocess::PrePostProcessor(cnn_network);
-    for (size_t i=0; i < cnn_network->inputs().size(); i++) {
-      if(cnn_network->inputs()[i].get_element_type() == ov::element::f16) {
+    for (size_t i = 0; i < cnn_network->inputs().size(); i++) {
+      if (cnn_network->inputs()[i].get_element_type() == ov::element::f16) {
         proc.input(i).tensor().set_element_type(ov::element::f32);
         proc.input(i).preprocess().convert_element_type(ov::element::f16);
       }
     }
 
-    for (size_t i=0; i < cnn_network->outputs().size(); i++) {
-      if(cnn_network->outputs()[i].get_element_type() == ov::element::f16) {
+    for (size_t i = 0; i < cnn_network->outputs().size(); i++) {
+      if (cnn_network->outputs()[i].get_element_type() == ov::element::f16) {
         proc.output(i).postprocess().convert_element_type(ov::element::f32);
       }
     }
     cnn_network = proc.build();
   }
 
-  //Check for Constant Folding
+  // Check for Constant Folding
   if (!global_context.is_wholly_supported_graph) {
     ov::pass::ConstantFolding pass_const_obj;
     pass_const_obj.run_on_model(cnn_network);
@@ -261,7 +269,7 @@ void SetIODefs(const ONNX_NAMESPACE::ModelProto& model_proto,
   for (auto iter = outputInfo.begin(); iter != outputInfo.end(); ++iter) {
     auto output_name = iter->first;
     auto it = const_outputs_map.find(output_name);
-    //Output is constant and don't need to set precision
+    // Output is constant and don't need to set precision
     if (it != const_outputs_map.end())
       break;
     auto itr = output_names.find(output_name);
@@ -278,14 +286,13 @@ GetOutputTensor(Ort::KernelContext& context, size_t batch_size,
                 OVInferRequestPtr infer_request,
                 std::string output_name,
                 std::unordered_map<std::string, int> output_names) {
-
   auto graph_output_blob = infer_request->GetTensor(output_name);
 
-  #if defined (OV_API_20)
+#if defined(OV_API_20)
   auto graph_output_dims = graph_output_blob->get_shape();
-  #else
+#else
   auto graph_output_dims = graph_output_blob->getTensorDesc().getDims();
-  #endif
+#endif
 
   if (batch_size > 1) {
     // Add the batch size as dim 0.
@@ -309,13 +316,12 @@ GetOutputTensor(Ort::KernelContext& context,
                 std::string output_name,
                 std::unordered_map<std::string, int> output_names,
                 std::shared_ptr<ngraph::Node> node) {
-
-  #if (defined OV_API_20)
-    // Find position of '/' in the output_name
-    int pos = output_name.find("/");
-    // Copy the substring from start to pos
-    output_name = output_name.substr(0 , pos);
-  #endif
+#if (defined OV_API_20)
+  // Find position of '/' in the output_name
+  int pos = output_name.find("/");
+  // Copy the substring from start to pos
+  output_name = output_name.substr(0, pos);
+#endif
 
   auto it = output_names.find(output_name);
   if (it == output_names.end()) {
@@ -334,7 +340,7 @@ GetOutputTensor(Ort::KernelContext& context,
 
 int GetFirstAvailableDevice(GlobalContext& global_context) {
   int i = 0;
-  //Get the first available VAD-M device and set the device to busy
+  // Get the first available VAD-M device and set the device to busy
   while (i < 8) {
     bool device = global_context.deviceAvailableList[i];
     if (device) {
@@ -343,8 +349,8 @@ int GetFirstAvailableDevice(GlobalContext& global_context) {
     }
     i++;
   }
-  //If all of the devices are busy, assign the first device and
-  //make all remaining devices free
+  // If all of the devices are busy, assign the first device and
+  // make all remaining devices free
   if (i == 8) {
     i = 0;
     global_context.deviceAvailableList[i] = false;
@@ -464,31 +470,42 @@ perfCountersSorted(std::map<std::string, InferenceEngine::InferenceEngineProfile
   return sorted;
 }
 
-#if defined (OV_API_20)
+#if defined(OV_API_20)
 void FillInputBlob(OVTensorPtr inputBlob, size_t batch_slice_idx,
                    std::string input_name, Ort::KernelContext& context,
                    const SubGraphContext& subgraph_context) {
-
-    size_t input_data_size = inputBlob->get_byte_size();
-    auto input_data = inputBlob->data();
-    auto tensor = context.GetInput(subgraph_context.input_names.at(input_name));
-    auto mem_info = tensor.GetTensorMemoryInfo();
-    if (mem_info.GetAllocatorName() == OpenVINO_GPU) {
-      ORT_THROW(log_tag + "IO Buffering is not enabled, Please enable Input on CPU");
-    }
-    // Copy input data into OpenVINO's input buffer
-    const char* tensor_data = tensor.GetTensorData<char>();
-    const char* batch_memory_offset = tensor_data + input_data_size * batch_slice_idx;
-    std::memcpy(input_data, batch_memory_offset, input_data_size);
+  size_t input_data_size = inputBlob->get_byte_size();
+  auto input_data = inputBlob->data();
+  auto tensor = context.GetInput(subgraph_context.input_names.at(input_name));
+  auto mem_info = tensor.GetTensorMemoryInfo();
+  if (mem_info.GetAllocatorName() == OpenVINO_GPU) {
+    ORT_THROW(log_tag + "IO Buffering is not enabled, Please enable Input on CPU");
+  }
+  ////
+  get_mem_custom("backend_utils.cc --> L485 BEFORE FillInputBlob std::memcopy");
+  ////
+  // Copy input data into OpenVINO's input buffer
+  const char* tensor_data = tensor.GetTensorData<char>();
+  const char* batch_memory_offset = tensor_data + input_data_size * batch_slice_idx;
+  std::memcpy(input_data, batch_memory_offset, input_data_size);
+  ////
+  get_mem_custom("backend_utils.cc --> L485 AFTER FillInputBlob std::memcopy");
+  ////
 }
 
 void FillOutputBlob(OVTensorPtr outputBlob, Ort::UnownedValue& output_tensor,
                     size_t batch_slice_idx) {
+  ////
+  get_mem_custom("backend_utils.cc --> L500 BEFORE FillOutputBlob std::memcopy");
+  ////
   auto output_data = outputBlob->data();
   size_t output_data_size = outputBlob->get_byte_size();
   char* tensor_data = output_tensor.GetTensorMutableData<char>();
   char* batch_memory_offset = tensor_data + output_data_size * batch_slice_idx;
   std::memcpy(batch_memory_offset, output_data, output_data_size);
+  ////
+  get_mem_custom("backend_utils.cc --> L500 AFTER FillOutputBlob std::memcopy");
+  ////
 }
 
 void printPerformanceCounts(const std::vector<OVProfilingInfo>& performanceMap,
@@ -579,13 +596,13 @@ void printPerformanceCounts(const std::map<std::string, InferenceEngine::Inferen
 }
 
 void printPerformanceCounts(OVInferRequestPtr request, std::ostream& stream, std::string deviceName) {
-  #if defined (OV_API_20)
-    auto performanceMap = request->GetNewObj().get_profiling_info();
-    printPerformanceCounts(performanceMap, stream, deviceName);
-  #else
-    auto performanceMap = request->GetObj().GetPerformanceCounts();
-    printPerformanceCounts(performanceMap, stream, deviceName);
-  #endif
+#if defined(OV_API_20)
+  auto performanceMap = request->GetNewObj().get_profiling_info();
+  printPerformanceCounts(performanceMap, stream, deviceName);
+#else
+  auto performanceMap = request->GetObj().GetPerformanceCounts();
+  printPerformanceCounts(performanceMap, stream, deviceName);
+#endif
 }
 
 }  // namespace backend_utils

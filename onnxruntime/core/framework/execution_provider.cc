@@ -11,6 +11,28 @@
 
 namespace onnxruntime {
 
+///////////////////////////
+//// Memory Check /////////
+///////////////////////////
+#include <sys/resource.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <unistd.h>
+
+void get_mem_custom(std::string func_name = "Overall") {
+  struct rusage r_usage;
+  std::cout << func_name << std::endl;
+  int ret = getrusage(RUSAGE_SELF, &r_usage);
+  float max_alloc = r_usage.ru_maxrss / (1024.0 * 1024.0);
+  if (ret == 0)
+    std::cout << "F: ov_intf Max Memory usage uptil now:   " << max_alloc << "  GB\n"
+              << std::endl;
+}
+///////////////////////////
+//// Memory Check /////////
+///////////////////////////
+
 namespace {
 // It assumes max(OrtMemType) <= 1, min(OrtMemType) = -2
 inline int MakeKey(int id, OrtMemType mem_type) {

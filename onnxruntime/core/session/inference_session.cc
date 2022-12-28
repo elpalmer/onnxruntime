@@ -918,6 +918,10 @@ common::Status InferenceSession::TransformGraph(onnxruntime::Graph& graph,
   MemcpyTransformer copy_transformer{provider_types, kernel_registry_manager};
   ORT_RETURN_IF_ERROR_SESSIONID_(copy_transformer.Apply(graph, modified, *session_logger_));
 
+  ////
+  onnxruntime::get_mem_custom("inference_session.cc --> L919 After InferenceSession::TransformGraph");
+  ////
+
   return common::Status::OK();
 }
 #endif  // !defined(ORT_MINIMAL_BUILD)

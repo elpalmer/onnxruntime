@@ -13,6 +13,31 @@
 #include "TFModelInfo.h"
 #include "utils.h"
 #include "ort_test_session.h"
+
+///////////////////////////
+//// Memory Check /////////
+///////////////////////////
+#include <sys/resource.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <unistd.h>
+
+void get_perfMem_custom(std::string func_name = "Overall") {
+  struct rusage r_usage;
+  std::cout << func_name << std::endl;
+  int ret = getrusage(RUSAGE_SELF, &r_usage);
+  float max_alloc = r_usage.ru_maxrss / (1024.0 * 1024.0);
+  if (ret == 0)
+    std::cout << "F: perf_runner Max Memory usage uptil now:   " << max_alloc << "  GB\n"
+              << std::endl;
+}
+// get_mem_custom();
+///////////////////////////
+//// Memory Check /////////
+///////////////////////////
+
+
 #ifdef HAVE_TENSORFLOW
 #include "tf_test_session.h"
 #endif
