@@ -253,7 +253,7 @@ ORT_API_STATUS_IMPL(SessionOptionsAppendExecutionProvider_CUDA,
 ORT_API_STATUS_IMPL(SessionOptionsAppendExecutionProvider_ROCM,
                     _In_ OrtSessionOptions* options, _In_ const OrtROCMProviderOptions* rocm_options);
 ORT_API_STATUS_IMPL(SessionOptionsAppendExecutionProvider_OpenVINO,
-                    _In_ OrtSessionOptions* options, _In_ const OrtOpenVINOProviderOptions* provider_options);
+                    _In_ OrtSessionOptions* options, _In_ const OrtOpenVINOProviderOptionsV2* provider_options);
 ORT_API_STATUS_IMPL(SetGlobalDenormalAsZero, _Inout_ OrtThreadingOptions* options);
 
 ORT_API_STATUS_IMPL(CreateArenaCfg, _In_ size_t max_mem, int arena_extend_strategy, int initial_chunk_size_bytes,

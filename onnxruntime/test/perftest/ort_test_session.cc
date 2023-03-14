@@ -319,6 +319,7 @@ OnnxRuntimeTestSession::OnnxRuntimeTestSession(Ort::Env& env, std::random_device
     bool enable_opencl_throttling = false;    // [enable_opencl_throttling]: Enables OpenCL queue throttling for GPU
                                               // device (Reduces CPU Utilization when using GPU)
     bool enable_dynamic_shapes = false;    // [enable_dynamic_shapes]: Enables Dynamic Shapes feature for CPU device)
+    size_t num_of_streams = 1;             // [num_streams]: Option that specifies the number of parallel inference
 #ifdef _MSC_VER
     std::string ov_string = ToUTF8String(performance_test_config.run_config.ep_runtime_config_string);
 #else
@@ -390,13 +391,16 @@ OnnxRuntimeTestSession::OnnxRuntimeTestSession(Ort::Env& env, std::random_device
         if ((int)num_of_threads <= 0) {
           ORT_THROW("[ERROR] [OpenVINO] The value for the key 'num_of_threads' should be greater than 0\n");
         }
+      } else if (key == "num_of_streams") {
+        std::stringstream sstream(value);
+        sstream >> num_of_streams;
       } else if (key == "cache_dir") {
         cache_dir = value;
       } else {
-        ORT_THROW("[ERROR] [OpenVINO] wrong key type entered. Choose from the following runtime key options that are available for OpenVINO. ['device_type', 'device_id', 'enable_vpu_fast_compile', 'num_of_threads', 'cache_dir', 'enable_opencl_throttling|true'] \n");
+        ORT_THROW("[ERROR] [OpenVINO] wrong key type entered. Choose from the following runtime key options that are available for OpenVINO. ['device_type', 'device_id', 'enable_vpu_fast_compile', 'num_of_threads', 'cache_dir', 'enable_opencl_throttling|true', 'num_of_streams'] \n");
       }
     }
-    OrtOpenVINOProviderOptions options;
+    OrtOpenVINOProviderOptionsV2 options;
     options.device_type = device_type.c_str();                  // To set the device_type
     options.device_id = device_id.c_str();                      // To set the device_id
     options.enable_vpu_fast_compile = enable_vpu_fast_compile;  // To enable_vpu_fast_compile, default is false
@@ -404,6 +408,7 @@ OnnxRuntimeTestSession::OnnxRuntimeTestSession(Ort::Env& env, std::random_device
     options.cache_dir = cache_dir.c_str();                      // sets the cache_dir, default is ""
     options.enable_opencl_throttling = enable_opencl_throttling;    // Enables GPU Throttling (Reduces CPU Utilization)
     options.enable_dynamic_shapes = enable_dynamic_shapes;      // Enables Dynamic Shapes feature
+    options.num_of_streams = num_of_streams;                            // < 1 = default, -1 = ov::streams::AUTO (let device decide), >1 = user defined number of parallel inference streams
     session_options.AppendExecutionProvider_OpenVINO(options);
 #else
     ORT_THROW("OpenVINO is not supported in this build\n");

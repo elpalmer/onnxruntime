@@ -67,6 +67,7 @@ std::set<std::string> ops_supported_as_function = {
 
 std::vector<SupportedOp> supported_op_mode = {
     {"Abs", V_2020_4, {"CPU", "GPU"}},
+    {"Abs", V_2023_0, {"VPUX"}},
     {"Acos", V_2020_4, {"CPU"}},
     {"Acos", V_2022_1, {"GPU"}},
     {"Acosh", V_2020_4, {"CPU"}},
@@ -1043,6 +1044,9 @@ bool DataOps::node_is_supported(const std::map<std::string, std::set<std::string
           return;
         }
         if ((optype == "Identity") || (optype == "Sqrt")) {
+          return;
+        }
+        if ((optype == "ConstantOfShape") || (optype == "Pow")) {
           return;
         }
         has_unsupported_dimension = true;

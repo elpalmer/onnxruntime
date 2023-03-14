@@ -23,7 +23,7 @@ OpenVINOExecutionProvider::OpenVINOExecutionProvider(const OpenVINOExecutionProv
   openvino_ep::BackendManager::GetGlobalContext().context = info.context_;
   openvino_ep::BackendManager::GetGlobalContext().enable_opencl_throttling = info.enable_opencl_throttling_;
   openvino_ep::BackendManager::GetGlobalContext().enable_dynamic_shapes = info.enable_dynamic_shapes_;
-
+  openvino_ep::BackendManager::GetGlobalContext().num_of_streams = info.num_of_streams_;
 
   if ((int)info.num_of_threads_ <= 0) {
     openvino_ep::BackendManager::GetGlobalContext().num_of_threads = 8;

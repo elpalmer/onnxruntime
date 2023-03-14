@@ -380,7 +380,7 @@ int real_main(int argc, char* argv[], Ort::Env& env) {
 #ifdef USE_OPENVINO
       // Setting default optimization level for OpenVINO can be overridden with -o option
       sf.SetGraphOptimizationLevel(ORT_DISABLE_ALL);
-      sf.AppendExecutionProvider_OpenVINO(OrtOpenVINOProviderOptions{});
+      sf.AppendExecutionProvider_OpenVINO(OrtOpenVINOProviderOptionsV2{});
 #else
       fprintf(stderr, "OpenVINO is not supported in this build");
       return -1;

@@ -16,6 +16,7 @@ struct GlobalContext {
   bool enable_opencl_throttling = false;
   bool enable_dynamic_shapes = false;
   size_t num_of_threads;
+  size_t num_of_streams;
   std::string device_type;
   std::string precision_str;
   std::string device_id;

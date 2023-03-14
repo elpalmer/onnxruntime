@@ -553,6 +553,7 @@ typedef struct OrtMIGraphXProviderOptions {
  *
  * \see OrtApi::SessionOptionsAppendExecutionProvider_OpenVINO
  */
+
 typedef struct OrtOpenVINOProviderOptions {
 #ifdef __cplusplus
   OrtOpenVINOProviderOptions() : device_type{}, enable_vpu_fast_compile{}, device_id{},
@@ -572,6 +573,21 @@ typedef struct OrtOpenVINOProviderOptions {
   unsigned char enable_opencl_throttling;  ///< 0 = disabled, nonzero = enabled
   unsigned char enable_dynamic_shapes;     ///< 0 = disabled, nonzero = enabled
 } OrtOpenVINOProviderOptions;
+
+typedef struct OrtOpenVINOProviderOptionsV2:OrtOpenVINOProviderOptions {
+  /*
+  const char* device_type;
+  unsigned char enable_vpu_fast_compile;  ///< 0 = disabled, nonzero = enabled
+  const char* device_id;
+  size_t num_of_threads;               ///< 0 = Use default number of threads
+  const char* cache_dir;          // path is set to empty by default
+  void* context;
+  unsigned char enable_opencl_throttling;  ///< 0 = disabled, nonzero = enabled
+  unsigned char enable_dynamic_shapes;     ///< 0 = disabled, nonzero = enabled
+  */
+  size_t num_of_streams;
+  OrtOpenVINOProviderOptions api1;
+} OrtOpenVINOProviderOptionsV2;
 
 struct OrtApi;
 typedef struct OrtApi OrtApi;
@@ -2500,7 +2516,7 @@ struct OrtApi {
    * \snippet{doc} snippets.dox OrtStatus Return Value
    */
   ORT_API2_STATUS(SessionOptionsAppendExecutionProvider_OpenVINO,
-                  _In_ OrtSessionOptions* options, _In_ const OrtOpenVINOProviderOptions* provider_options);
+                  _In_ OrtSessionOptions* options, _In_ const OrtOpenVINOProviderOptionsV2* provider_options);
 
   /// @}
   /// \name OrtThreadingOptions

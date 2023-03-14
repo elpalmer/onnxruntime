@@ -730,7 +730,7 @@ TEST_P(ModelTest, Run) {
         OrtMIGraphXProviderOptions ep_options;
         ortso.AppendExecutionProvider_MIGraphX(ep_options);
       } else if (provider_name == "openvino") {
-        OrtOpenVINOProviderOptions ep_options;
+        OrtOpenVINOProviderOptionsV2 ep_options;
         ortso.AppendExecutionProvider_OpenVINO(ep_options);
       }
 #ifdef USE_NNAPI

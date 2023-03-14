@@ -588,7 +588,7 @@ std::unique_ptr<IExecutionProvider> CreateExecutionProviderInstance(
 #endif
   } else if (type == kOpenVINOExecutionProvider) {
 #ifdef USE_OPENVINO
-    OrtOpenVINOProviderOptions params;
+    OrtOpenVINOProviderOptionsV2 params;
     params.device_type = openvino_device_type.c_str();
     std::string cache_dir;
 
