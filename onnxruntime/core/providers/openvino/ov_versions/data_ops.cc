@@ -125,8 +125,8 @@ std::vector<SupportedOp> supported_op_mode = {
     {"DequantizeLinear", V_2021_4, {"CPU", "GPU"}},
     {"DequantizeLinear", V_2023_0, {"VPUX"}},
     {"Div", V_2020_4, {"All"}},
-    //{"Dropout", V_2020_4, {"All"}},
-    {"Dropout", V_2020_4, {"CPU", "GPU", "MYRIAD"}},
+    {"Dropout", V_2020_4, {"All"}}, //Worked on VPU with squeezenet model
+    //{"Dropout", V_2020_4, {"CPU", "GPU", "MYRIAD"}},
     {"Elu", V_2020_4, {"All"}},
     {"Equal", V_2020_4, {"All"}},
     {"Erf", V_2020_4, {"All"}},
@@ -145,8 +145,8 @@ std::vector<SupportedOp> supported_op_mode = {
     {"GatherND", V_2021_4, {"All"}},
     //{"Gemm", V_2020_4, {"All"}},
     {"Gemm", V_2020_4, {"CPU", "GPU", "MYRIAD"}},
-    //{"GlobalAveragePool", V_2020_4, {"All"}},
-    {"GlobalAveragePool", V_2020_4, {"CPU", "GPU", "MYRIAD"}},
+    {"GlobalAveragePool", V_2020_4, {"All"}}, ////Worked on VPU with squeezenet model
+    //{"GlobalAveragePool", V_2020_4, {"CPU", "GPU", "MYRIAD"}},
     {"GlobalLpPool", V_2020_4, {"CPU", "GPU"}},
     {"GlobalMaxPool", V_2022_1, {"CPU", "GPU"}},
     {"Greater", V_2020_4, {"All"}},

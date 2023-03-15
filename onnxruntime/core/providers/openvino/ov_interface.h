@@ -52,6 +52,7 @@ typedef std::shared_ptr<OVTensor> OVTensorPtr;
         ov::Core& Get() {
             return oe;
         }
+        void SetStreams(const std::string& device_type, size_t num_streams);
     };
 
     class OVExeNetwork {
