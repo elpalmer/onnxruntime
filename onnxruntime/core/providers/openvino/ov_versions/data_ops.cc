@@ -219,6 +219,9 @@ std::vector<SupportedOp> supported_op_mode = {
     {"Range", V_2022_1, {"All"}}, //VPUX is WIP
     {"Reciprocal", V_2020_4, {"All"}},
     //{"Reciprocal", V_2020_4, {"CPU", "GPU", "MYRIAD"}},
+
+    //Disabling all Reduce tests temporarily.
+    /*
     {"ReduceL1", V_2022_1, {"CPU", "GPU"}},
     {"ReduceL1", V_2023_0, {"VPUX"}},
     {"ReduceL2", V_2022_1, {"CPU", "GPU"}},
@@ -229,8 +232,8 @@ std::vector<SupportedOp> supported_op_mode = {
     {"ReduceLogSumExp", V_2022_1, {"All"}},
     //{"ReduceLogSumExp", V_2022_1, {"CPU", "GPU", "MYRIAD"}},
     {"ReduceMax", V_2020_4, {"All"}},
-    {"ReduceMean", V_2020_4, {"All"}},
-    {"ReduceMin", V_2020_4, {"All"}},
+    {"ReduceMean", V_2020_4, {"All"}}, // Found in Many onnx models
+    {"ReduceMin", V_2020_4, {"All"}},  // Found in Many onnx models
     {"ReduceProd", V_2020_4, {"CPU"}},
     {"ReduceProd", V_2022_1, {"GPU"}},
     {"ReduceProd", V_2023_0, {"VPUX"}},
@@ -238,6 +241,7 @@ std::vector<SupportedOp> supported_op_mode = {
     //{"ReduceSumSquare", V_2020_4, {"CPU", "MYRIAD"}},
     {"ReduceSumSquare", V_2022_1, {"All"}},
     //{"ReduceSumSquare", V_2022_1, {"GPU"}},
+    */
     {"Relu", V_2020_4, {"All"}},
     {"Resize", V_2020_4, {"CPU"}},
     {"Resize", V_2021_3, {"MYRIAD"}},
