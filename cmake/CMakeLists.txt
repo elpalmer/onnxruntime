@@ -1183,10 +1183,6 @@ if (onnxruntime_USE_OPENVINO)
     add_definitions(-DOPENVINO_CONFIG_VAD_F=1)
   endif()
 
-  if (onnxruntime_USE_OPENVINO_VPUX_FP32)
-    add_definitions(-DOPENVINO_CONFIG_VPUX_FP32=1)
-  endif()
-
   if (onnxruntime_USE_OPENVINO_VPUX_FP16)
     add_definitions(-DOPENVINO_CONFIG_VPUX_FP16=1)
   endif()
@@ -1227,11 +1223,6 @@ if (onnxruntime_USE_OPENVINO)
 
   if (onnxruntime_USE_OPENVINO_VAD_F_NP)
     add_definitions(-DOPENVINO_CONFIG_VAD_F=1)
-    add_definitions(-DOPENVINO_DISABLE_GRAPH_PARTITION=1)
-  endif()
-
-  if (onnxruntime_USE_OPENVINO_VPUX_FP32_NP)
-    add_definitions(-DOPENVINO_CONFIG_VPUX_FP32=1)
     add_definitions(-DOPENVINO_DISABLE_GRAPH_PARTITION=1)
   endif()
 
