@@ -125,7 +125,6 @@ BasicBackend::BasicBackend(const ONNX_NAMESPACE::ModelProto& model_proto,
   void BasicBackend::PopulateConfigValue(ov::AnyMap & device_config) {
     device_config = {};
     // Set inference precision based on device precision for OV backend
-    std::cout << " Global context precision_str  = " << global_context_.precision_str << std::endl;
     if (global_context_.precision_str.find("FP16")!= std::string::npos && global_context_.device_type == "GPU"){
       device_config.emplace(ov::hint::inference_precision("f16"));
     }
@@ -162,12 +161,15 @@ BasicBackend::BasicBackend(const ONNX_NAMESPACE::ModelProto& model_proto,
     }
   }
 
-  void BasicBackend::EnableGPUThrottling(ov::AnyMap & device_config) {
-    if (global_context_.enable_opencl_throttling == true && global_context_.device_type.find("GPU") != std::string::npos) {
-      LOGS_DEFAULT(INFO) << log_tag << "Enabled OpenCL queue throttling for GPU device";
-      device_config[GPU_CONFIG_KEY(PLUGIN_THROTTLE)] = "1";
-    }
+void BasicBackend::EnableGPUThrottling(ov::AnyMap& device_config) {
+  if (global_context_.enable_opencl_throttling == true && global_context_.device_type.find("GPU") != std::string::npos) {
+    LOGS_DEFAULT(INFO) << log_tag << "Enabled OpenCL queue throttling for GPU device";
+    std::pair<std::string, ov::Any> device_property;
+    device_property = std::make_pair("PLUGIN_THROTTLE", "1");
+    device_config.emplace(ov::device::properties("GPU_CONFIG_KEY", device_property));
+    // device_config[GPU_CONFIG_KEY(PLUGIN_THROTTLE)] = "1";
   }
+}
 
   // Starts an asynchronous inference request for data in slice indexed by batch_slice_idx on
   // an Infer Request indexed by infer_req_idx
