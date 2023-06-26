@@ -20,6 +20,8 @@ Requirements
 This package supports:
  - Intel® CPUs
  - Intel® integrated GPUs
+ - Intel® discrete GPUs
+ 
 
 ``pip3 install onnxruntime-openvino``
 
@@ -28,8 +30,6 @@ For installation instructions on Windows please refer to  `OpenVINO™ Execution
 
 **OpenVINO™ Execution Provider for ONNX Runtime** Linux Wheels comes with pre-built libraries of OpenVINO™ version 2023.0.0 eliminating the need to install OpenVINO™ separately. The OpenVINO™ libraries are prebuilt with CXX11_ABI flag set to 0.
 
-The package also includes module that is used by torch-ort-inference to accelerate inference for PyTorch models with OpenVINO Execution Provider.
-See `torch-ort-inference <https://github.com/pytorch/ort#accelerate-inference-for-pytorch-models-with-onnx-runtime-preview>`_ for more details.
 
 For more details on build and installation please refer to `Build <https://onnxruntime.ai/docs/build/eps.html#openvino>`_.
 
