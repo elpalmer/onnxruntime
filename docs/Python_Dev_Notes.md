@@ -15,4 +15,5 @@ Currently, the official ONNXRuntime Python wheel (v1.3.0 onwards) hosted on PyPi
 
 If the Python wheel is built from source using the build toolset provided with Visual Studio 2017, it will work with the Visual C++ 2017 runtime.
 
+
 CPython 3.7 is distributed with a VC++ 2017 runtime. Unlike the earlier VC++ version, VC++ 2017 Runtime is binary backward compatible with VC++ 2015. Which means you could build your application with VC++ 2015 then run it with VC++ 2017 runtime.
