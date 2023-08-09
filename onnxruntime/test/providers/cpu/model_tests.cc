@@ -1010,6 +1010,7 @@ TEST_P(ModelTest, Run) {
       ORT_TSTR("Candy"),
       ORT_TSTR("SSD"),
       ORT_TSTR("ResNet101_DUC_HDC-12"),
+      ORT_TSTR("tf_inception_resnet_v2"),
       ORT_TSTR("YOLOv3-12")};
   static const ORTCHAR_T* dml_disabled_tests[] = {ORT_TSTR("mlperf_ssd_resnet34_1200"),
                                                   ORT_TSTR("mlperf_ssd_mobilenet_300"),
