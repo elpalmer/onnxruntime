@@ -3,6 +3,7 @@
 
 #include "core/providers/shared_library/provider_api.h"
 #include "core/providers/openvino/openvino_provider_factory.h"
+#include "core/providers/openvino/openvino_devices.h"
 #include "openvino_execution_provider.h"
 #include "openvino_provider_factory_creator.h"
 
@@ -88,3 +89,8 @@ ORT_API(onnxruntime::Provider*, GetProvider) {
   return &onnxruntime::g_provider;
 }
 }
+
+// std::vector<std::string> OpenVINO_Devices::GetAvailableDevices_ov() {
+//   onnxruntime::openvino_ep::OVCore ie_core;
+//   return ie_core.GetAvailableDevices();
+// }

@@ -413,6 +413,10 @@ OnnxRuntimeTestSession::OnnxRuntimeTestSession(Ort::Env& env, std::random_device
 #endif
   } else if (provider_name == onnxruntime::kOpenVINOExecutionProvider) {
 #ifdef USE_OPENVINO
+    #include "core/providers/openvino/openvino_devices.h"
+    OpenVINO_Devices ov_dev;
+    auto available_devices = ov_dev.GetAvailableDevices_ov();
+    exit(1);
     std::string device_type = "";           // [device_type]: Overrides the accelerator hardware type and precision
                                             //   with these values at runtime.
     bool enable_vpu_fast_compile = false;   // [enable_vpu_fast_compile]: Fast-compile may be optionally enabled to

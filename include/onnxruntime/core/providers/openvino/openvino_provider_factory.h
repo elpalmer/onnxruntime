@@ -1,15 +1,26 @@
 // Copyright(C) 2019 Intel Corporation
 // Licensed under the MIT License
+#pragma once
 
 #include "onnxruntime_c_api.h"
 
+
+
 #ifdef __cplusplus
+// namespace onnxruntime{
+//   struct OpenVINO_Devices {
+//     std::vector<std::string> GetAvailableDevices_ov();
+//   };
+// }
+
+
 struct ProviderInfo_OpenVINO {
   virtual std::vector<std::string> GetAvailableDevices() const = 0;
 };
 
 extern "C" {
 #endif
+
 
 /**
  * \param device_type openvino device type and precision. Could be any of
