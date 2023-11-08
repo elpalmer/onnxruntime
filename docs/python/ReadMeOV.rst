@@ -1,5 +1,5 @@
 OpenVINO™ Execution Provider for ONNX Runtime
-===============================================
+================================================
 
 `OpenVINO™ Execution Provider for ONNX Runtime <https://onnxruntime.ai/docs/execution-providers/OpenVINO-ExecutionProvider.html>`_ is a product designed for ONNX Runtime developers who want to get started with OpenVINO™ in their inferencing applications. This product delivers  `OpenVINO™ <https://software.intel.com/content/www/us/en/develop/tools/openvino-toolkit.html>`_ inline optimizations which enhance inferencing performance with minimal code modifications.
 
